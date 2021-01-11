@@ -1,0 +1,4 @@
+todos/node_modules/*
+mongodata/*
+todos/config/auth.json
+
