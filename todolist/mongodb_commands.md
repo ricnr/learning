@@ -22,3 +22,12 @@ mongodb://<username>:<password>@<hostname>:<port>/<dbname>
 > use todosample 
 > db.createUser({ user: "testadmin", pwd: passwordPrompt(), roles: [{ role: "readWrite", db: "todosample" }] });
 ```
+
+- show all tables in db
+
+```
+> use todosample
+> show collections
+> db.todos.find().limit(3)
+> exit()
+``

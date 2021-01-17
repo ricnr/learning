@@ -18,7 +18,7 @@ $ mkdir mongodata
 $ docker ps -a 
 
 (If change default port '27017', use -p option '-p 27017:<new port>')
-$ sudo docker run -it -v mongodata:/data/db --name mongo-test -p 27017:27017 -d mongo
+$ sudo docker run -it -v ~/mongodata:/data/db --name mongo-test -p 27017:27017 -d mongo
 
 $ docker exec -it mongo-test bash
 
@@ -47,6 +47,7 @@ $ sudo docker container rm <container-id>
 $ mkdir todos
 $ npm init
 $ npm install express ejs body-parser mongoose --save
+$ npm install -g nodemon
 $ mkdir -p config & touch config/auth.json
 ```
 
@@ -58,3 +59,7 @@ $ nodemon app.js
 (Access to the below url)
 http://localhost:3000/<path>
 ```
+
+### test api application
+
+[postman](https://www.postman.com/)
