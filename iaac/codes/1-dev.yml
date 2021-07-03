@@ -1,0 +1,152 @@
+AWSTemplateFormatVersion': '2010-09-09'
+Description: 'mng infra code'
+
+Parameters:
+	AZ: 
+		Type: 'String'
+		Default: 'ap-northeast-1a'
+  IngressPublicIp:
+		Type: 'String'
+		Default: 'x.x.x.x/32'
+   
+Resources:
+  #--- Network ------------
+  MngVPC: 
+		Type: AWS::EC2::VPC
+		Properties: 
+			EnableDnsSupport: true
+			EnableDnsHostnames: true
+			InstanceTenancy: 'default'
+			CidrBlock: '172.16.0.0/16'
+			Tags: 
+				- Key: 'Name'
+					Value: 'mng-vpc'
+	MngSubnet: 
+		Type: AWS:EC2:Subnet
+		Properties: 
+			AvailabilityZone: 
+				Ref: AZ
+			VpcId: 
+				Ref: MngVPC
+			CidrBlock: '172.16.0.0/24'
+			MapPublicIpOnLaunch: true
+			Tags: 
+				- Key: 'Name'
+					Value: 'mng-public-subnet'
+	MngIGW: 
+		Type: AWS::EC2::InternetGateway
+		Properties:  
+			Tags: 
+				- Key: 'Name'
+					Value: 'mng-igw'  	
+	GWAttachment: 
+		Type: AWS::EC2::VPCGatewayAttachment
+		Properties: 
+			VpcId: 
+				Ref: MngVPC 
+			InternetGatewayId: 
+				Ref: MngIGW 
+	MngRT: 
+		Type: AWS::EC2::RouteTable
+		Properties: 
+			VpcId:  
+				Ref: MngVPC
+			Tags: 
+				- Key: 'Name'
+					Value: 'mng-rt'  
+	mngRoute': 
+		Type: AWS::EC2::Route,
+		DependsOn: GWAttachment
+		Properties: 
+			RouteTableId:  
+				Ref: MngRT
+			DestinationCidrBlock: '0.0.0.0/0'
+			GatewayId:  
+				Ref: MngIGW
+	SubnetRTAssociation: 
+		Type: AWS::EC2::SubnetRouteTableAssociation
+		Properties: 
+			SubnetId:  
+				Ref: MngSubnet
+			RouteTableId:  
+				Ref: MngRT
+
+  #----- EC2 Role Creation ---
+	MngEC2Role:
+		Type: AWS::EC2::Role
+		Properties:
+			AssumeRolePolicyDocument:
+				Version: '2012-10-17'
+				Statement:
+					- Effect: Allow
+						Principal:
+							Service:
+								- 'ec2.amazonaws.com'
+						Action:
+							- 'sts:AssumeRole'
+				Path: '/'
+				Tags:
+					- Key: 'Name'
+						Value: 'mng-ec2-role'
+	MngEC2Policy:
+		Type: AWS::IAM::Policy
+		Properties:
+			PolicyName: 'mng-ec2-policy' 
+			PolicyDocument:
+				Version: '2012-10-17'
+				Statement:
+					- Effect: Allow
+						Action: '*'
+						Resource: '*'
+			Roles:
+				- Ref: MngEC2Role
+	MngInstanceProfile:
+		Type: AWS::IAM::InstanceProfile
+		Properties:
+			Path: '/'
+			Roles:
+				- Ref: MngEC2Role
+		
+  #----- EC2 Creation --------
+	MngInstanceSG:
+		Type: AWS::EC2::SecurityGroup
+		Properties:
+			GroupName: 'mng-ec2-sg'
+			GroupDescription: 'access from home'
+			VpcId:
+				Ref: MngVPC 
+			SecurityGroupIngress:
+				IpProtocol: 'tcp'
+				FromPort: '22'
+				ToPort: '22'
+				CidrIp: 
+					Ref: IngressPublicIp 
+	MngInstance:
+		Type: AWS:EC2:Instance
+		Properties:
+			ImageId: 'ami-0ab4d1e9cf9a1215a'
+			InstanceType: 't2.micro'
+			KeyName: 'mng-key'
+			IamInstanceProfile:
+				Ref: MngInstanceProfile
+			NetworkInterfaces:
+				- AssociatePublicIpAddress: true
+					mngiceIndex: '0'
+					SubnetId: 
+						Ref: MngSubnet
+					GroupSet:
+						- Ref: MngInstanceSG 
+			UserData: !Base64 |
+				#!/bin/bash
+				sudo yum update -y 
+				sudo yum install docker
+				sudo systemctl start docker
+				sudo usermod -a -G docker ec2-user
+				sudo systemctl enable docker
+			Tags:
+				- Key: 'Name'
+					Value: 'mng-instance'
+
+Outputs:
+	PublicIp:
+		Value: !GetAtt [ MngInstance, PublicIp ] 
