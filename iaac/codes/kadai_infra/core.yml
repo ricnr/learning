@@ -178,8 +178,8 @@ Resources:
         - Ref: PrivateSubnetTwo
       VpcId: 
         Ref: VPC
-       VpcEndpointType: Interface
-       SecurityGroupIds:
+      VpcEndpointType: Interface
+      SecurityGroupIds:
         - Ref: EndpointSecurityGroup
   EcrApiEndpoint:
     Type: AWS::EC2::VPCEndpoint
@@ -309,99 +309,8 @@ Resources:
                 - 'logs:CreateLogGroup'
                 - 'logs:PutLogEvents'
               Resources: '*'
-
-  #--- CICD Service Role ----
-  ServiceCodePipelineServiceRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: kadai-ServiceCodePipelineServiceRole
-      AssumeRolePolicyDocument:
-        Statement:
-        - Effect: Allow
-          Principal:
-            Service:
-            - codepipeline.amazonaws.com
-          Action:
-          - sts:AssumeRole
-      Path: "/"
-      Policies:
-      - PolicyName: kadai-codepipeline-service-policy
-        PolicyDocument:
-          Statement:
-          - Action:
-            - codecommit:GetBranch
-            - codecommit:GetCommit
-            - codecommit:UploadArchive
-            - codecommit:GetUploadArchiveStatus
-            - codecommit:CancelUploadArchive
-            Resource: "*"
-            Effect: Allow
-          - Action:
-            - s3:GetObject
-            - s3:GetObjectVersion
-            - s3:GetBucketVersioning
-            Resource: "*"
-            Effect: Allow
-          - Action:
-            - s3:PutObject
-            Resource:
-            - arn:aws:s3:::*
-            Effect: Allow
-          - Action:
-            - elasticloadbalancing:*
-            - autoscaling:*
-            - cloudwatch:*
-            - ecs:*
-            - codebuild:*
-            - iam:PassRole
-            Resource: "*"
-            Effect: Allow
-          Version: "2012-10-17"
-
-  ServiceCodeBuildServiceRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: kadai-ServiceCodeBuildServiceRole
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          Effect: Allow
-          Principal:
-            Service: codebuild.amazonaws.com
-          Action: sts:AssumeRole
-      Policies:
-      - PolicyName: "kadai-CodeBuildServicePolicy"
-        PolicyDocument:
-          Version: "2012-10-17"
-          Statement:
-          - Effect: "Allow"
-            Action:
-            - "codecommit:ListBranches"
-            - "codecommit:ListRepositories"
-            - "codecommit:BatchGetRepositories"
-            - "codecommit:Get*"
-            - "codecommit:GitPull"
-            Resource:
-            - Fn::Sub: arn:aws:codecommit:ap-northeast-1:${AWS::AccountId}:kadai-ServiceRepository
-          - Effect: "Allow"
-            Action:
-            - "logs:CreateLogGroup"
-            - "logs:CreateLogStream"
-            - "logs:PutLogEvents"
-            Resource: "*"
-          - Effect: "Allow"
-            Action:
-            - "s3:PutObject"
-            - "s3:GetObject"
-            - "s3:GetObjectVersion"
-            - "s3:ListBucket"
-            Resource: "*"
-          - Effect: "Allow"
-            Action:
-            - "ecr:InitiateLayerUpload"
-            - "ecr:GetAuthorizationToken"
-            Resource: "*"
-
+        
+        
 Outputs:
   CurrentAccount:
     Value: !Ref AWS::AccountId
