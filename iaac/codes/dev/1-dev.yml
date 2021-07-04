@@ -74,14 +74,6 @@ Resources:
       RouteTableId:  
         Ref: MngRT
 
-  #----- EC2 Role Creation ---
-  MngInstanceProfile:
-    Type: AWS::IAM::InstanceProfile
-    Properties:
-      Path: '/'
-      Roles:
-        - Ref: MngEC2Role
-    
   #----- EC2 Creation --------
   MngInstanceSG:
     Type: AWS::EC2::SecurityGroup
@@ -99,14 +91,14 @@ Resources:
   MngInstance:
     Type: AWS::EC2::Instance
     Properties:
-      ImageId: 'ami-0ab4d1e9cf9a1215a'
+      ImageId: 'ami-06631ebafb3ae5d34'
       InstanceType: 't2.micro'
       KeyName: 'mng-key'
       IamInstanceProfile:
-        Ref: MngInstanceProfile
+        Ref: MngEC2Role
       NetworkInterfaces:
         - AssociatePublicIpAddress: true
-          mngiceIndex: '0'
+          DeviceIndex: '0'
           SubnetId: 
             Ref: MngSubnet
           GroupSet:
