@@ -110,6 +110,7 @@ Resources:
         sudo systemctl start docker
         sudo usermod -a -G docker ec2-user
         sudo systemctl enable docker
+        sudo yum install -y jq
       Tags:
         - Key: 'Name'
           Value: 'mng-instance'

@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion': '2010-09-09'
+AWSTemplateFormatVersion: '2010-09-09'
 Description: 'kadai1 base network code'
 
 Parameters:
@@ -6,8 +6,8 @@ Parameters:
     Type: String
     Default: 'ap-northeast-1a'
   AZTwo: 
-    Type': String
-    Default': 'ap-northeast-1c'
+    Type: String
+    Default: 'ap-northeast-1c'
 
 Mappings:
   SubnetConfig: 
@@ -36,7 +36,7 @@ Resources:
           Value: 'kadai1-vpc'
 
   PublicSubnetOne: 
-    Type: AWS:EC2:Subnet
+    Type: AWS::EC2::Subnet
     Properties: 
       AvailabilityZone: 
         Ref: AZOne
@@ -48,7 +48,7 @@ Resources:
         - Key: 'Name'
           Value: 'kadai1-public1'  
   PublicSubnetTwo: 
-    Type: AWS:EC2:Subnet
+    Type: AWS::EC2::Subnet
     Properties: 
       AvailabilityZone: 
         Ref: AZTwo
@@ -60,7 +60,7 @@ Resources:
         - Key: 'Name'
           Value: 'kadai1-public2'  
   PrivateSubnetOne: 
-    Type: AWS:EC2:Subnet
+    Type: AWS::EC2::Subnet
     Properties: 
       AvailabilityZone: 
         Ref: AZOne
@@ -72,7 +72,7 @@ Resources:
         - Key: 'Name'
           Value: 'kadai1-private1'
   PrivateSubnetTwo: 
-    Type: AWS:EC2:Subnet
+    Type: AWS::EC2::Subnet
     Properties: 
       AvailabilityZone: 
         Ref: AZTwo 
@@ -107,7 +107,7 @@ Resources:
       Tags: 
         - Key: 'Name'
           Value: 'kadai1-public-rt'  
-  PublicRoute': 
+  PublicRoute: 
     Type: AWS::EC2::Route
     DependsOn: GatewayAttachement
     Properties: 
@@ -230,6 +230,7 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupName: 'kadai1-fargate-sg'
+      GroupDescription: 'fargate container security group'
       VpcId: 
         Ref: VPC
       SecurityGroupIngress:
@@ -238,17 +239,17 @@ Resources:
 
   #--- ECS Service Role -----
   EcsServiceRole:
-    Type: AWS::IAM::Role
+    Type: AWS::IAM::Role  
     Properties:
       AssumeRolePolicyDocument:
         Statement:
         - Effect: Allow
           Principal:
             Service:
-              - ecs.amazonaws.com
-              - ecs-tasks.amazonaws.com
+            - ecs.amazonaws.com
+            - ecs-tasks.amazonaws.com
           Action:
-          - sts: AssumeRole
+          - sts:AssumeRole
       Path: /
       Policies:
       - PolicyName: ecs-service
@@ -256,33 +257,33 @@ Resources:
           Statement:
           - Effect: Allow
             Action:
-              # Allow ECS to attach ENI to instance
-              - 'ec2:AttachNetworkInterface'
-              - 'ec2:CreateNetworkInterface'
-              - 'ec2:CreateNetworkInterfacePermission'
-              - 'ec2:DeleteNetworkInterface'
-              - 'ec2:DeleteNetworkInterfacePermission'
-              - 'ec2:Describe*'
-              - 'ec2:DetachNetworkInterface' 
-              # allow ECS to update load balancers
-              - 'elasticloadbalancing:DeregisterInstancesFromLoadBalancer'
-              - 'elasticloadbalancing:DeregisterTargets'
-              - 'elasticloadbalancing:Describe*'
-              - 'elasticloadbalancing:RegisterInstancesWithLoadBalancer'
-              - 'elasticloadbalancing:RegisterTargets'
-              # allow ECS to pass role to run task
-              - 'iam:PassRole'
-              # allow ECS to interact with container images
-              - 'ecr:GetAuthorizationToken'
-              - 'ecr:BatchCheckLayerAvailability'
-              - 'ecr:GetDownloadUrlForLayer'
-              - 'ecr:BatchGetImage'
-              # allow ECS to push logs to CloudWatch
-              - 'logs:DescribeLogStreams'
-              - 'logs:CreateLogStream'
-              - 'logs:CreateLogGroup'
-              - 'logs:PutLogEvents'
-            Resources: '*'
+            # Allow ECS to attach ENI to instance
+            - 'ec2:AttachNetworkInterface'
+            - 'ec2:CreateNetworkInterface'
+            - 'ec2:CreateNetworkInterfacePermission'
+            - 'ec2:DeleteNetworkInterface'
+            - 'ec2:DeleteNetworkInterfacePermission'
+            - 'ec2:Describe*'
+            - 'ec2:DetachNetwåorkInterface' 
+            # allow ECS to update load balancers
+            - 'elasticloadbalancing:DeregisterInstancesFromLoadBalancer'
+            - 'elasticloadbalancing:DeregisterTargets'
+            - 'elasticloadbalancing:Describe*'
+            - 'elasticloadbalancing:RegisterInstancesWithLoadBalancer'
+            - 'elasticloadbalancing:RegisterTargets'
+            # allow ECS to pass role to run task
+            - 'iam:PassRole'
+            # allow ECS to interact with container images
+            - 'ecr:GetAuthorizationToken'
+            - 'ecr:BatchCheckLayerAvailability'
+            - 'ecr:GetDownloadUrlForLayer'
+            - 'ecr:BatchGetImage'
+            # allow ECS to push logs to CloudWatch
+            - 'logs:DescribeLogStreams'
+            - 'logs:CreateLogStream'
+            - 'logs:CreateLogGroup'
+            - 'logs:PutLogEvents'
+            Resource: '*'
   EcsTaskRole:
     Type: AWS::IAM::Role
     Properties:
@@ -290,27 +291,29 @@ Resources:
         Statement:
         - Effect: Allow
           Principal:
-            Service: [ ecs-tasks.amazonaws.com ]
-          Action: [ 'sts: AssumeRole' ]
+            Service: 
+            - ecs-tasks.amazonaws.com 
+          Action: 
+          - sts:AssumeRole
       Path: /
       Policies:
-        - PolicyName: AmazonECSTaskRolePolicy
-          PolicyDocument:
-            Statement:
-            - Effect: Allow
-              Action:
-                # allow ECS Tasks to download images from ECR
-                - 'ecr:GetAuthorizationToken'
-                - 'ecr:BatchCheckLayerAvailability'
-                - 'ecr:GetDownloadUrlForLayer'
-                - 'ecr:BatchGetImage'
-                # allow ECS tasks to upload logs to cloudwatch
-                - 'logs:CreateLogStream'
-                - 'logs:CreateLogGroup'
-                - 'logs:PutLogEvents'
-              Resources: '*'
+      - PolicyName: AmazonECSTaskRolePolicy
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+            # allow ECS Tasks to download images from ECR
+            - 'ecr:GetAuthorizationToken'
+            - 'ecr:BatchCheckLayerAvailability'
+            - 'ecr:GetDownloadUrlForLayer'
+            - 'ecr:BatchGetImage'
+            # allow ECS tasks to upload logs to cloudwatch
+            - 'logs:CreateLogStream'
+            - 'logs:CreateLogGroup'
+            - 'logs:PutLogEvents'
+            Resource: '*'
         
-        
+
 Outputs:
   CurrentAccount:
     Value: !Ref AWS::AccountId
@@ -333,22 +336,12 @@ Outputs:
     Export:
       Name: !Sub ${AWS::StackName}-fargate-sg
   EcsServiceRole:
-    Value:
-      Ref: !GetAtt EcsServiceRole.Arn
+    Value: !GetAtt EcsServiceRole.Arn
     Export:
       Name: !Sub ${AWS::StackName}-EcsServiceRole 
   EcsTaskRole:
-    Value:
-      Ref: !GetAtt EcsTaskRole.Arn
+    Value: !GetAtt EcsTaskRole.Arn
     Export:
       Name: !Sub ${AWS::StackName}-EcsTaskRole
-  CodeBuildRole:
-    Value: !GetAtt ServiceCodeBuildServiceRole.Arn
-    Export:
-      Name: !Sub ${AWS::StackName}-CodeBuildServiceRole
-  CodePipelineRole:
-    Value: !GetAtt ServiceCodePipelineServiceRole.Arn
-    Export:
-      Name: !Sub ${AWS::StackName}-CodePipelineServiceRole
 
       
