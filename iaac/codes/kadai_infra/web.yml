@@ -1,14 +1,124 @@
 AWSTemplateFormatVersion: '2010-09-09'
-Description: 'Create Fargate'
+Description: 'Create web resources'
 
 Parameters:
-  ProjectName:
-    Default: 'kadai1'
+  CoreStackName:
+    Default: core
+    Type: String
+  ClusterImage:
+    Default: <accountid>.dkr.ecr.ap-northeast-1.amazonaws.com/<repository-name>:latest
     Type: String
 
 Resources:
-  ECR:
-    Type: AWS::ECR::Repository
+  #--- ALB Config ---
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
-      RepositoryName: !Sub ${ProjectName}-ecr
- 
+      VpcId: 
+        Fn::ImportValue: !Sub ${CoreStackName}-VPC
+      Name: kadai-targetgroup
+      Protocol: HTTP
+      Port: 80
+      TargetType: ip
+      HealthCheckEnabled: true
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      HealthyThresholdCount: 3
+      UnhealthyThresholdCount: 3
+  InternetALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: kadai-alb
+      Tags:
+        - Key: Name
+          Value: kadai-alb
+      Type: application
+      Scheme: internet-facing
+      LoadBalancerAttributes:
+        - Key: deletion_protection.enabled
+          Value: false
+        - Key: idle_timeout.timeout_seconds
+          Value: 60
+        - Key: access_logs.s3.enabled
+          Value: false
+      SecurityGroups:
+        - Fn::ImportValue: !Sub ${CoreStackName}-alb-sg
+      Subnets:
+        - Fn::ImportValue: !Sub ${CoreStackName}-PublicSubnetOne
+        - Fn::ImportValue: !Sub ${CoreStackName}-PublicSubnetTwo
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref TargetGroup
+          Type: forward
+      LoadBalancerArn: !Ref InternetALB
+      Port: 80
+      Protocol: TCP
+
+  #--- ECS Clsuter ---
+  Cluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: 'kadai1'
+      Tags:
+        - Key: 'Name'
+          Value: 'kadai1-cluster'
+  ClusterLogGroup:
+    Type: AWS::Logs::LogGroup
+    LogGroupName: kadai1
+    RetentionInDays: 1
+
+  ECSTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: kadai1-cluster-task
+      Cpu: 256
+      ExecutionRoleArn:
+        Fn::ImportValue: !Sub ${CoreStackName}-EcsServiceRole
+      TaskRoleArn:
+        Fn::ImportValue: !Sub ${CoreStackName}-EcsTaskRole
+      Memory: 512
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      
+      #ContainerDefinitions
+      ContainerDefinitions:
+        - Name: kadai1-service
+          Image: !Ref ClusterImage
+          PortMappings:
+            - HostPort: 80
+              Protocol: tcp
+              ContainerPort: 80
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref ClusterLogGroup
+              awslogs-region: ap-northeast-1
+              awslogs-stream-prefix: kadai1-service
+          #The soft limit (in MiB) of memory to reserve for the container.
+          MemoryReservation: 128
+  ECSService:
+    Type: AWS::ECS::Service
+    DependsOn: ALBListener
+    Properties:
+      ServiceName: kadai1-service
+      Cluster: !Ref Cluster
+      LaunchType: FARGATE
+      DesiredCount: 1
+      LoadBalancers:
+        - TargetGroupArn: !Ref TargetGroup
+          ContainerPort: 80
+          ContainerName: kadai1-service
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          SecurityGroups:
+            - Fn::ImportValue: !Sub ${CoreStackName}-fargate-sg
+          Subnets:
+            - Fn::ImportValue: !Sub ${CoreStackName}-PrivateSubnetOne
+            - Fn::ImportValue: !Sub ${CoreStackName}-PrivateSubnetTwo
+      TaskDefinition: !Ref ECSTaskDefinition
+

@@ -226,6 +226,25 @@ Resources:
         Ref: VPC
 
   #--- Security Group ----
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: 'kadai1-alb-sg'
+      GroupDescription: 'internet facing alb security group'
+      VpcId: 
+        Ref: VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: "0.0.0.0/0"
+      Tags: 
+        - Key: 'Name'
+          Value: 'kadai-alb-sg'
   FargateContainerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -233,9 +252,18 @@ Resources:
       GroupDescription: 'fargate container security group'
       VpcId: 
         Ref: VPC
-      SecurityGroupIngress:
-        - CidrIp: !FindInMap ['SubnetConfig', 'VPC', 'CIDR']
-          IpProtocol: -1
+      Tags: 
+        - Key: 'Name'
+          Value: 'kadai-ecs-sg'
+  FargateContainerSecurityGroupIngress: 
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties: 
+      IpProtocol: tcp
+      FromPort: 80
+      ToPort: 80
+      SourceSecurityGroupId: !GetAtt ALBSecurityGroup.GroupId 
+      GroupId: !GetAtt FargateContainerSecurityGroup.GroupId
+
 
   #--- ECS Service Role -----
   EcsServiceRole:
@@ -335,6 +363,10 @@ Outputs:
     Value: !Ref FargateContainerSecurityGroup 
     Export:
       Name: !Sub ${AWS::StackName}-fargate-sg
+  ALBSecurityGroup:
+    Value: !Ref ALBSecurityGroup
+    Export:
+      Name: !Sub ${AWS::StackName}-alb-sg
   EcsServiceRole:
     Value: !GetAtt EcsServiceRole.Arn
     Export:
