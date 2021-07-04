@@ -233,20 +233,213 @@ Resources:
 			VpcId: 
 				Ref: VPC
 			SecurityGroupIngress:
-				## TODO
 				- CidrIp: !FindInMap ['SubnetConfig', 'VPC', 'CIDR']
 					IpProtocol: -1
 
+	#--- ECS Service Role -----
+	EcsServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+              - ecs.amazonaws.com
+              - ecs-tasks.amazonaws.com
+          Action:
+          - sts: AssumeRole
+      Path: /
+      Policies:
+      - PolicyName: ecs-service
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action:
+              # Allow ECS to attach ENI to instance
+              - 'ec2:AttachNetworkInterface'
+              - 'ec2:CreateNetworkInterface'
+              - 'ec2:CreateNetworkInterfacePermission'
+              - 'ec2:DeleteNetworkInterface'
+              - 'ec2:DeleteNetworkInterfacePermission'
+              - 'ec2:Describe*'
+              - 'ec2:DetachNetworkInterface' 
+              # allow ECS to update load balancers
+              - 'elasticloadbalancing:DeregisterInstancesFromLoadBalancer'
+              - 'elasticloadbalancing:DeregisterTargets'
+              - 'elasticloadbalancing:Describe*'
+              - 'elasticloadbalancing:RegisterInstancesWithLoadBalancer'
+              - 'elasticloadbalancing:RegisterTargets'
+              # allow ECS to pass role to run task
+              - 'iam:PassRole'
+              # allow ECS to interact with container images
+              - 'ecr:GetAuthorizationToken'
+              - 'ecr:BatchCheckLayerAvailability'
+              - 'ecr:GetDownloadUrlForLayer'
+              - 'ecr:BatchGetImage'
+              # allow ECS to push logs to CloudWatch
+              - 'logs:DescribeLogStreams'
+              - 'logs:CreateLogStream'
+              - 'logs:CreateLogGroup'
+              - 'logs:PutLogEvents'
+            Resources: '*'
+  EcsTaskRole:
+	  Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: [ ecs-tasks.amazonaws.com ]
+          Action: [ 'sts: AssumeRole' ]
+      Path: /
+      Policies:
+        - PolicyName: AmazonECSTaskRolePolicy
+          PolicyDocument:
+            Statement:
+            - Effect: Allow
+              Action:
+                # allow ECS Tasks to download images from ECR
+                - 'ecr:GetAuthorizationToken'
+                - 'ecr:BatchCheckLayerAvailability'
+                - 'ecr:GetDownloadUrlForLayer'
+                - 'ecr:BatchGetImage'
+                # allow ECS tasks to upload logs to cloudwatch
+                - 'logs:CreateLogStream'
+                - 'logs:CreateLogGroup'
+                - 'logs:PutLogEvents'
+              Resources: '*'
+
+  #--- CICD Service Role ----
+  ServiceCodePipelineServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: kadai-ServiceCodePipelineServiceRole
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - codepipeline.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      Policies:
+      - PolicyName: kadai-codepipeline-service-policy
+        PolicyDocument:
+          Statement:
+          - Action:
+            - codecommit:GetBranch
+            - codecommit:GetCommit
+            - codecommit:UploadArchive
+            - codecommit:GetUploadArchiveStatus
+            - codecommit:CancelUploadArchive
+            Resource: "*"
+            Effect: Allow
+          - Action:
+            - s3:GetObject
+            - s3:GetObjectVersion
+            - s3:GetBucketVersioning
+            Resource: "*"
+            Effect: Allow
+          - Action:
+            - s3:PutObject
+            Resource:
+            - arn:aws:s3:::*
+            Effect: Allow
+          - Action:
+            - elasticloadbalancing:*
+            - autoscaling:*
+            - cloudwatch:*
+            - ecs:*
+            - codebuild:*
+            - iam:PassRole
+            Resource: "*"
+            Effect: Allow
+          Version: "2012-10-17"
+
+  ServiceCodeBuildServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: kadai-ServiceCodeBuildServiceRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: codebuild.amazonaws.com
+          Action: sts:AssumeRole
+      Policies:
+      - PolicyName: "kadai-CodeBuildServicePolicy"
+        PolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+          - Effect: "Allow"
+            Action:
+            - "codecommit:ListBranches"
+            - "codecommit:ListRepositories"
+            - "codecommit:BatchGetRepositories"
+            - "codecommit:Get*"
+            - "codecommit:GitPull"
+            Resource:
+            - Fn::Sub: arn:aws:codecommit:ap-northeast-1:${AWS::AccountId}:kadai-ServiceRepository
+          - Effect: "Allow"
+            Action:
+            - "logs:CreateLogGroup"
+            - "logs:CreateLogStream"
+            - "logs:PutLogEvents"
+            Resource: "*"
+          - Effect: "Allow"
+            Action:
+            - "s3:PutObject"
+            - "s3:GetObject"
+            - "s3:GetObjectVersion"
+            - "s3:ListBucket"
+            Resource: "*"
+          - Effect: "Allow"
+            Action:
+            - "ecr:InitiateLayerUpload"
+            - "ecr:GetAuthorizationToken"
+            Resource: "*"
+
 Outputs:
-  VPC:
-    Value: 
-			Ref: VPC
+	CurrentAccount:
+    Value: !Ref AWS::AccountId
     Export:
-      Name: kadaiVPC
-	FargateSG:
-		Value:
-			Ref: FargateContainerSecurityGroup 
+      Name: !Sub ${AWS::StackName}-CurrentAccount
+  VPCId:
+    Value: !Ref VPC
+    Export:
+      Name: !Sub ${AWS::StackName}-VPC
+  PrivateSubnetOne:
+    Value: !Ref PrivateSubnetOne
+    Export:
+      Name: !Sub ${AWS::StackName}-PrivateSubnetOne
+  PrivateSubnetTwo:
+    Value: !Ref PrivateSubnetTwo
+    Export:
+      Name: !Sub ${AWS::StackName}-PrivateSubnetTwo
+	FargateSecurityGroup:
+		Value: !Ref FargateContainerSecurityGroup 
 		Export:
-			Name: fargateSG
+			Name: !Sub ${AWS::StackName}-fargate-sg
+  EcsServiceRole:
+		Value:
+			Ref: !GetAtt EcsServiceRole.Arn
+		Export:
+			Name: !Sub ${AWS::StackName}-EcsServiceRole 
+	EcsTaskRole:
+		Value:
+			Ref: !GetAtt EcsTaskRole.Arn
+		Export:
+			Name: !Sub ${AWS::StackName}-EcsTaskRole
+  CodeBuildRole:
+    Value: !GetAtt ServiceCodeBuildServiceRole.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-CodeBuildServiceRole
+  CodePipelineRole:
+    Value: !GetAtt ServiceCodePipelineServiceRole.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-CodePipelineServiceRole
 
-
+			

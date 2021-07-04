@@ -1,13 +1,16 @@
-AWSTemplateFormatVersion': '2010-09-09'
+AWSTemplateFormatVersion: '2010-09-09'
 Description: 'mng infra code'
 
 Parameters:
 	AZ: 
 		Type: 'String'
 		Default: 'ap-northeast-1a'
-  IngressPublicIp:
+	IngressPublicIp:
 		Type: 'String'
 		Default: 'x.x.x.x/32'
+	MngEC2Role:
+		Type: 'String'
+		Default: 'kadai1-dev-ec2-role'
    
 Resources:
   #--- Network ------------
@@ -72,34 +75,6 @@ Resources:
 				Ref: MngRT
 
   #----- EC2 Role Creation ---
-	MngEC2Role:
-		Type: AWS::EC2::Role
-		Properties:
-			AssumeRolePolicyDocument:
-				Version: '2012-10-17'
-				Statement:
-					- Effect: Allow
-						Principal:
-							Service:
-								- 'ec2.amazonaws.com'
-						Action:
-							- 'sts:AssumeRole'
-				Path: '/'
-				Tags:
-					- Key: 'Name'
-						Value: 'mng-ec2-role'
-	MngEC2Policy:
-		Type: AWS::IAM::Policy
-		Properties:
-			PolicyName: 'mng-ec2-policy' 
-			PolicyDocument:
-				Version: '2012-10-17'
-				Statement:
-					- Effect: Allow
-						Action: '*'
-						Resource: '*'
-			Roles:
-				- Ref: MngEC2Role
 	MngInstanceProfile:
 		Type: AWS::IAM::InstanceProfile
 		Properties:
