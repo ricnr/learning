@@ -20,7 +20,7 @@ Resources:
       EnableDnsSupport: true
       EnableDnsHostnames: true
       InstanceTenancy: 'default'
-      CidrBlock: '172.16.0.0/16'
+      CidrBlock: '10.1.0.0/16'
       Tags: 
         - Key: 'Name'
           Value: 'mng-vpc'
@@ -31,7 +31,7 @@ Resources:
         Ref: AZ
       VpcId: 
         Ref: MngVPC
-      CidrBlock: '172.16.0.0/24'
+      CidrBlock: '10.1.0.0/24'
       MapPublicIpOnLaunch: true
       Tags: 
         - Key: 'Name'

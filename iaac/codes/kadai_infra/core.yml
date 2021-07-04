@@ -2,242 +2,242 @@ AWSTemplateFormatVersion': '2010-09-09'
 Description: 'kadai1 base network code'
 
 Parameters:
-	AZOne: 
-		Type: String
-		Default: 'ap-northeast-1a'
-	AZTwo: 
-		Type': String
-		Default': 'ap-northeast-1c'
+  AZOne: 
+    Type: String
+    Default: 'ap-northeast-1a'
+  AZTwo: 
+    Type': String
+    Default': 'ap-northeast-1c'
 
 Mappings:
-	SubnetConfig: 
-		VPC:  
-			CIDR: '10.0.0.0/16'
-		PublicOne: 
-			CIDR: '10.0.0.0/24'
-		PublicTwo: 
-			CIDR: '10.0.1.0/24'
-		PrivateOne: 
-			CIDR: '10.0.2.0/24'
-		PrivateTwo: 
-			CIDR: '10.0.3.0/24' 
+  SubnetConfig: 
+    VPC:  
+      CIDR: '10.0.0.0/16'
+    PublicOne: 
+      CIDR: '10.0.0.0/24'
+    PublicTwo: 
+      CIDR: '10.0.1.0/24'
+    PrivateOne: 
+      CIDR: '10.0.2.0/24'
+    PrivateTwo: 
+      CIDR: '10.0.3.0/24' 
 
 Resources: 
 ##--- VPC/Subnet ------------
-	VPC: 
-		Type: AWS::EC2::VPC
-		Properties: 
-			EnableDnsSupport: true
-			EnableDnsHostnames: true
-			InstanceTenancy: 'default'
-			CidrBlock: !FindInMap [ 'SubnetConfig', 'VPC', 'CIDR']
-			Tags: 
-				- Key: 'Name'
-					Value: 'kadai1-vpc'
+  VPC: 
+    Type: AWS::EC2::VPC
+    Properties: 
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      InstanceTenancy: 'default'
+      CidrBlock: !FindInMap [ 'SubnetConfig', 'VPC', 'CIDR']
+      Tags: 
+        - Key: 'Name'
+          Value: 'kadai1-vpc'
 
-	PublicSubnetOne: 
-		Type: AWS:EC2:Subnet
-		Properties: 
-			AvailabilityZone: 
-				Ref: AZOne
-			VpcId: 
-				Ref: VPC
-			CidrBlock: !FindInMap [ 'SubnetConfig', 'PublicOne', 'CIDR']
-			MapPublicIpOnLaunch: true
-			Tags: 
-				- Key: 'Name'
-					Value: 'kadai1-public1'  
-	PublicSubnetTwo: 
-		Type: AWS:EC2:Subnet
-		Properties: 
-			AvailabilityZone: 
-				Ref: AZTwo
-			VpcId: 
-				Ref: VPC
-			CidrBlock: !FindInMap [ 'SubnetConfig', 'PublicTwo', 'CIDR']
-			MapPublicIpOnLaunch: true
-			Tags: 
-				- Key: 'Name'
-					Value: 'kadai1-public2'  
-	PrivateSubnetOne: 
-		Type: AWS:EC2:Subnet
-		Properties: 
-			AvailabilityZone: 
-				Ref: AZOne
-			VpcId: 
-				Ref: VPC 
-			CidrBlock:  !FindInMap [ 'SubnetConfig', 'PrivateOne', 'CIDR'] 
-			MapPublicIpOnLaunch: true
-			Tags: 
-				- Key: 'Name'
-					Value: 'kadai1-private1'
-	PrivateSubnetTwo: 
-		Type: AWS:EC2:Subnet
-		Properties: 
-			AvailabilityZone: 
-				Ref: AZTwo 
-			VpcId: 
-				Ref: VPC 
-			CidrBlock: !FindInMap [ 'SubnetConfig', 'PrivateTwo', 'CIDR'] 
-			MapPublicIpOnLaunch: true
-			Tags: 
-				- Key: 'Name'
-					Value: 'kadai1-private2'
+  PublicSubnetOne: 
+    Type: AWS:EC2:Subnet
+    Properties: 
+      AvailabilityZone: 
+        Ref: AZOne
+      VpcId: 
+        Ref: VPC
+      CidrBlock: !FindInMap [ 'SubnetConfig', 'PublicOne', 'CIDR']
+      MapPublicIpOnLaunch: true
+      Tags: 
+        - Key: 'Name'
+          Value: 'kadai1-public1'  
+  PublicSubnetTwo: 
+    Type: AWS:EC2:Subnet
+    Properties: 
+      AvailabilityZone: 
+        Ref: AZTwo
+      VpcId: 
+        Ref: VPC
+      CidrBlock: !FindInMap [ 'SubnetConfig', 'PublicTwo', 'CIDR']
+      MapPublicIpOnLaunch: true
+      Tags: 
+        - Key: 'Name'
+          Value: 'kadai1-public2'  
+  PrivateSubnetOne: 
+    Type: AWS:EC2:Subnet
+    Properties: 
+      AvailabilityZone: 
+        Ref: AZOne
+      VpcId: 
+        Ref: VPC 
+      CidrBlock:  !FindInMap [ 'SubnetConfig', 'PrivateOne', 'CIDR'] 
+      MapPublicIpOnLaunch: true
+      Tags: 
+        - Key: 'Name'
+          Value: 'kadai1-private1'
+  PrivateSubnetTwo: 
+    Type: AWS:EC2:Subnet
+    Properties: 
+      AvailabilityZone: 
+        Ref: AZTwo 
+      VpcId: 
+        Ref: VPC 
+      CidrBlock: !FindInMap [ 'SubnetConfig', 'PrivateTwo', 'CIDR'] 
+      MapPublicIpOnLaunch: true
+      Tags: 
+        - Key: 'Name'
+          Value: 'kadai1-private2'
 
-	InternetGateway: 
-		Type: AWS::EC2::InternetGateway
-		Properties:  
-			Tags: 
-				- Key: 'Name'
-					Value: 'kadai1-igw'  	
-	GatewayAttachement: 
-		Type: AWS::EC2::VPCGatewayAttachment
-		Properties: 
-			VpcId: 
-				Ref: VPC 
-			InternetGatewayId: 
-				Ref: InternetGateway 
+  InternetGateway: 
+    Type: AWS::EC2::InternetGateway
+    Properties:  
+      Tags: 
+        - Key: 'Name'
+          Value: 'kadai1-igw'    
+  GatewayAttachement: 
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties: 
+      VpcId: 
+        Ref: VPC 
+      InternetGatewayId: 
+        Ref: InternetGateway 
 
   #--- Public Route Table ----
-	PublicRouteTable: 
-		Type: AWS::EC2::RouteTable
-		Properties: 
-			VpcId:  
-				Ref: VPC
-			Tags: 
-				- Key: 'Name'
-					Value: 'kadai1-public-rt'  
-	PublicRoute': 
-		Type: AWS::EC2::Route
-		DependsOn: GatewayAttachement
-		Properties: 
-			RouteTableId:  
-				Ref: PublicRouteTable
-			DestinationCidrBlock: '0.0.0.0/0'
-			GatewayId:  
-				Ref: InternetGateway 
-	PublicSubnetOneRouteTableAssociation: 
-		Type: AWS::EC2::SubnetRouteTableAssociation
-		Properties: 
-			SubnetId:  
-				Ref: PublicSubnetOne
-			RouteTableId:  
-				Ref: PublicRouteTable
-	PublicSubnetTwoRouteTableAssociation: 
-		Type: AWS::EC2::SubnetRouteTableAssociation
-		Properties: 
-			SubnetId:  
-				Ref: PublicSubnetTwo
-			RouteTableId:  
-				Ref: PublicRouteTable
+  PublicRouteTable: 
+    Type: AWS::EC2::RouteTable
+    Properties: 
+      VpcId:  
+        Ref: VPC
+      Tags: 
+        - Key: 'Name'
+          Value: 'kadai1-public-rt'  
+  PublicRoute': 
+    Type: AWS::EC2::Route
+    DependsOn: GatewayAttachement
+    Properties: 
+      RouteTableId:  
+        Ref: PublicRouteTable
+      DestinationCidrBlock: '0.0.0.0/0'
+      GatewayId:  
+        Ref: InternetGateway 
+  PublicSubnetOneRouteTableAssociation: 
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: 
+      SubnetId:  
+        Ref: PublicSubnetOne
+      RouteTableId:  
+        Ref: PublicRouteTable
+  PublicSubnetTwoRouteTableAssociation: 
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: 
+      SubnetId:  
+        Ref: PublicSubnetTwo
+      RouteTableId:  
+        Ref: PublicRouteTable
 
   #--- Private Route Table ----
-	PrivateRouteTable: 
-		Type: AWS::EC2::RouteTable
-		Properties: 
-			VpcId:  
-				Ref: VPC
-			Tags: 
-				- Key: 'Name'
-					Value: 'kadai1-private-rt'  
-	PrivateSubnetOneRouteTableAssociation: 
-		Type: AWS::EC2::SubnetRouteTableAssociation
-		Properties: 
-			SubnetId:  
-				Ref: PrivateSubnetOne
-			RouteTableId:  
-				Ref: PrivateRouteTable
-	PrivateSubnetTwoRouteTableAssociation: 
-		Type: AWS::EC2::SubnetRouteTableAssociation
-		Properties: 
-			SubnetId:  
-				Ref: PrivateSubnetTwo
-			RouteTableId:  
-				Ref: PrivateRouteTable
+  PrivateRouteTable: 
+    Type: AWS::EC2::RouteTable
+    Properties: 
+      VpcId:  
+        Ref: VPC
+      Tags: 
+        - Key: 'Name'
+          Value: 'kadai1-private-rt'  
+  PrivateSubnetOneRouteTableAssociation: 
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: 
+      SubnetId:  
+        Ref: PrivateSubnetOne
+      RouteTableId:  
+        Ref: PrivateRouteTable
+  PrivateSubnetTwoRouteTableAssociation: 
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties: 
+      SubnetId:  
+        Ref: PrivateSubnetTwo
+      RouteTableId:  
+        Ref: PrivateRouteTable
 
-	#---- Endpoints -------
-	EndpointSecurityGroup:
-		Type: AWS::EC2::SecurityGroup
-		Properties:
-			GroupName: 'kadai-endpoint-sg'
-			GroupDescription: 'access from private subnet'
-			VpcId:
-				Ref: VPC
-			SecurityGroupIngress: 
-				- IpProtocol: -1
-					CidrIp: !FindInMap [ 'SubnetConfig', 'PrivateOne', 'CIDR']  
-				- IpProtocol: -1
-					CidrIp: !FindInMap [ 'SubnetConfig', 'PrivateTwo', 'CIDR']  
-	LogsEndpoint:
-		Type: AWS::EC2::VPCEndpoint
-  	Properties:
-    	ServiceName: com.amazonaws.ap-northeast-1.logs
-			PrivateDnsEnabled: true
-    	SubnetIds:
-    	  - Ref: PrivateSubnetOne
-    	  - Ref: PrivateSubnetTwo
-    	VpcId: 
-				Ref: VPC
-   		VpcEndpointType: Interface
-   		SecurityGroupIds:
-      	- Ref: EndpointSecurityGroup
-	EcrApiEndpoint:
-		Type: AWS::EC2::VPCEndpoint
-		Properties:
-			ServiceName: com.amazonaws.ap-northeast-1.ecr.api
-			PrivateDnsEnabled: true
-			SubnetIds:
-				- Ref: PrivateSubnetOne
-				- Ref: PrivateSubnetTwo
-			VpcId: 
-				Ref: VPC
-			VpcEndpointType: Interface
-			SecurityGroupIds:
-				- Ref: EndpointSecurityGroup
-	EcrDkrEndpoint:
-		Type: AWS::EC2::VPCEndpoint
-		Properties:
-			ServiceName: com.amazonaws.ap-northeast-1.ecr.dkr
-			PrivateDnsEnabled: true
-			SubnetIds:
-				- Ref: PrivateSubnetOne
-				- Ref: PrivateSubnetTwo
-			VpcId: 
-				Ref: VPC
-			VpcEndpointType: Interface
-			SecurityGroupIds:
-				- Ref: EndpointSecurityGroup
-	S3Endpoint:
-		Type: AWS::EC2::VPCEndpoint
-		Properties:
-			PolicyDocument:
-      	Version: '2012-10-17'
-      	Statement:
-        	- Effect: Allow
-          	Principal: '*'
-          	Action:
-            	- '*'
-          	Resource:
-            	- '*'
-    	RouteTableIds:
-      	- Ref: PrivateRouteTable
-    	ServiceName: com.amazonaws.ap-northeast-1.s3
-    	VpcId: 
-				Ref: VPC
+  #---- Endpoints -------
+  EndpointSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: 'kadai-endpoint-sg'
+      GroupDescription: 'access from private subnet'
+      VpcId:
+        Ref: VPC
+      SecurityGroupIngress: 
+        - IpProtocol: -1
+          CidrIp: !FindInMap [ 'SubnetConfig', 'PrivateOne', 'CIDR']  
+        - IpProtocol: -1
+          CidrIp: !FindInMap [ 'SubnetConfig', 'PrivateTwo', 'CIDR']  
+  LogsEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: com.amazonaws.ap-northeast-1.logs
+      PrivateDnsEnabled: true
+      SubnetIds:
+        - Ref: PrivateSubnetOne
+        - Ref: PrivateSubnetTwo
+      VpcId: 
+        Ref: VPC
+       VpcEndpointType: Interface
+       SecurityGroupIds:
+        - Ref: EndpointSecurityGroup
+  EcrApiEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: com.amazonaws.ap-northeast-1.ecr.api
+      PrivateDnsEnabled: true
+      SubnetIds:
+        - Ref: PrivateSubnetOne
+        - Ref: PrivateSubnetTwo
+      VpcId: 
+        Ref: VPC
+      VpcEndpointType: Interface
+      SecurityGroupIds:
+        - Ref: EndpointSecurityGroup
+  EcrDkrEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: com.amazonaws.ap-northeast-1.ecr.dkr
+      PrivateDnsEnabled: true
+      SubnetIds:
+        - Ref: PrivateSubnetOne
+        - Ref: PrivateSubnetTwo
+      VpcId: 
+        Ref: VPC
+      VpcEndpointType: Interface
+      SecurityGroupIds:
+        - Ref: EndpointSecurityGroup
+  S3Endpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: '*'
+            Action:
+              - '*'
+            Resource:
+              - '*'
+      RouteTableIds:
+        - Ref: PrivateRouteTable
+      ServiceName: com.amazonaws.ap-northeast-1.s3
+      VpcId: 
+        Ref: VPC
 
-	#--- Security Group ----
-	FargateContainerSecurityGroup:
-		Type: AWS::EC2::SecurityGroup
-		Properties:
-			GroupName: 'kadai1-fargate-sg'
-			VpcId: 
-				Ref: VPC
-			SecurityGroupIngress:
-				- CidrIp: !FindInMap ['SubnetConfig', 'VPC', 'CIDR']
-					IpProtocol: -1
+  #--- Security Group ----
+  FargateContainerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: 'kadai1-fargate-sg'
+      VpcId: 
+        Ref: VPC
+      SecurityGroupIngress:
+        - CidrIp: !FindInMap ['SubnetConfig', 'VPC', 'CIDR']
+          IpProtocol: -1
 
-	#--- ECS Service Role -----
-	EcsServiceRole:
+  #--- ECS Service Role -----
+  EcsServiceRole:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -284,7 +284,7 @@ Resources:
               - 'logs:PutLogEvents'
             Resources: '*'
   EcsTaskRole:
-	  Type: AWS::IAM::Role
+    Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
         Statement:
@@ -403,7 +403,7 @@ Resources:
             Resource: "*"
 
 Outputs:
-	CurrentAccount:
+  CurrentAccount:
     Value: !Ref AWS::AccountId
     Export:
       Name: !Sub ${AWS::StackName}-CurrentAccount
@@ -419,20 +419,20 @@ Outputs:
     Value: !Ref PrivateSubnetTwo
     Export:
       Name: !Sub ${AWS::StackName}-PrivateSubnetTwo
-	FargateSecurityGroup:
-		Value: !Ref FargateContainerSecurityGroup 
-		Export:
-			Name: !Sub ${AWS::StackName}-fargate-sg
+  FargateSecurityGroup:
+    Value: !Ref FargateContainerSecurityGroup 
+    Export:
+      Name: !Sub ${AWS::StackName}-fargate-sg
   EcsServiceRole:
-		Value:
-			Ref: !GetAtt EcsServiceRole.Arn
-		Export:
-			Name: !Sub ${AWS::StackName}-EcsServiceRole 
-	EcsTaskRole:
-		Value:
-			Ref: !GetAtt EcsTaskRole.Arn
-		Export:
-			Name: !Sub ${AWS::StackName}-EcsTaskRole
+    Value:
+      Ref: !GetAtt EcsServiceRole.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-EcsServiceRole 
+  EcsTaskRole:
+    Value:
+      Ref: !GetAtt EcsTaskRole.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-EcsTaskRole
   CodeBuildRole:
     Value: !GetAtt ServiceCodeBuildServiceRole.Arn
     Export:
@@ -442,4 +442,4 @@ Outputs:
     Export:
       Name: !Sub ${AWS::StackName}-CodePipelineServiceRole
 
-			
+      
