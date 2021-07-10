@@ -55,7 +55,7 @@ Resources:
           Type: forward
       LoadBalancerArn: !Ref InternetALB
       Port: 80
-      Protocol: TCP
+      Protocol: HTTP
 
   #--- ECS Clsuter ---
   Cluster:
@@ -67,8 +67,9 @@ Resources:
           Value: 'kadai1-cluster'
   ClusterLogGroup:
     Type: AWS::Logs::LogGroup
-    LogGroupName: kadai1
-    RetentionInDays: 1
+    Properties:
+      LogGroupName: kadai1
+      RetentionInDays: 1
 
   ECSTaskDefinition:
     Type: AWS::ECS::TaskDefinition
@@ -90,7 +91,7 @@ Resources:
           Image: !Ref ClusterImage
           PortMappings:
             - HostPort: 80
-              Protocol: tcp
+              Protocol: HTTP
               ContainerPort: 80
           LogConfiguration:
             LogDriver: awslogs
@@ -122,3 +123,13 @@ Resources:
             - Fn::ImportValue: !Sub ${CoreStackName}-PrivateSubnetTwo
       TaskDefinition: !Ref ECSTaskDefinition
 
+Outputs:
+  CheckURL:
+    Value: 
+      Fn::Join: [ "", [ "http://", { "Fn::GetAtt" : [ "InternetALB", "DNSName" ]}, "/"]]
+  ApiURL:
+    Value: 
+      Fn::Join: [ "", [ "http://", { "Fn::GetAtt" : [ "InternetALB", "DNSName" ]}, "/api"]]
+  dbaccessURL:
+     Value: 
+      Fn::Join: [ "", [ "http://", { "Fn::GetAtt" : [ "InternetALB", "DNSName" ]}, "/db"]] 

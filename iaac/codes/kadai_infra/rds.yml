@@ -1,0 +1,160 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Create rds'
+
+Parameters:
+  CoreStackName:
+    Default: core
+    Type: String
+  DatabaseName:
+    Default: test_db
+    Type: String
+  
+Resources:
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupName: kadai-db-subnet-group
+      DBSubnetGroupDescription: 'kadai1 subnet group for db'
+      SubnetIds:
+        - Fn::ImportValue: !Sub ${CoreStackName}-PrivateSubnetOne
+        - Fn::ImportValue: !Sub ${CoreStackName}-PrivateSubnetTwo
+      Tags:
+        - Key: Name
+          Value: kadai-db-subnet-group
+  DBClusterParameterGroup:
+    Type: AWS::RDS::DBClusterParameterGroup
+    Properties:
+      Family: aurora-postgresql10
+      Description: 'kadai1 db cluster parameter group postgresql10'
+      Parameters:
+        client_encoding: UTF8
+        rds.force_ssl: 1
+      Tags:
+        - Key: Name
+          Value: kadai-db-cluster-param-group
+  AuroraCluster:
+    Type: AWS::RDS::DBCluster
+    DeletionPolicy: Snapshot
+    UpdateReplacePolicy: Snapshot
+    Properties:
+      MasterUsername: '{{resolve:secretsmanager:rds:SecretString:rds/username}}'
+      MasterUserPassword: '{{resolve:secretsmanager:rds:SecretString:rds/password}}'
+      Engine: aurora-postgresql
+      EngineMode: provisioned
+      EngineVersion: 10.14
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      DBClusterParameterGroupName: !Ref DBClusterParameterGroup
+      VpcSecurityGroupIds:
+        - Fn::ImportValue: !Sub ${CoreStackName}-rds-sg
+      BackupRetentionPeriod: 5
+      DatabaseName: !Ref DatabaseName
+      DBClusterIdentifier: kadai-aurora-posgresql
+      DeletionProtection: false
+      PreferredBackupWindow: 03:00-03:30
+      PreferredMaintenanceWindow: wed03:30-wed04:30
+      StorageEncrypted: true
+      Tags:
+        - Key: Name
+          Value: kadai-aurora-posgre-cluster
+
+  DBParameterGroup:
+    Type: AWS::RDS::DBParameterGroup
+    Properties:
+      Description: kadai-db-param-group
+      Family: aurora-postgresql10
+      Parameters:
+        shared_preload_libraries: auto_explain,pg_stat_statements,pg_hint_plan,pgaudit
+        log_statement: ddl
+        log_connections: 1
+        log_disconnections: 1
+        log_lock_waits: 1
+        log_min_duration_statement: 5000
+        auto_explain.log_min_duration: 5000
+        auto_explain.log_verbose: 1
+        log_rotation_age: 1440
+        log_rotation_size: 102400
+        rds.log_retention_period: 10080
+        random_page_cost: 1
+        strack_activity_query_size: 16384
+        idle_in_transaction_session_timeout: 7200000
+        statement_timeout: 7200000
+      Tags:
+        - Key: Name
+          Value: kadai-db-param-group
+  RDSDBInstanceOne:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      DBParameterGroupName: !Ref DBParameterGroup
+      Engine: aurora-postgresql
+      DBClusterIdentifier: !Ref AuroraCluster
+      AvailabilityZone: 
+        Fn::ImportValue: !Sub ${CoreStackName}-AZOne
+      DBInstanceClass: db.t3.medium 
+      AutoMinorVersionUpgrade: true
+      CopyTagsToSnapshot: true
+      DBInstanceIdentifier: kadai-aurora-postgresql-one
+      EnablePerformanceInsights: true
+      PreferredMaintenanceWindow: mon03:30-mon04:30
+      DeletionProtection: false
+      MonitoringInterval: 60
+      MonitoringRoleArn: 
+        Fn::ImportValue: !Sub ${CoreStackName}-RDSMonitorRole
+      PubliclyAccessible: false
+      PromotionTier: 1
+      Tags:
+        - Key: Name
+          Value: kadai-aurora-posgre-instance-one
+  RDSDBInstanceTwo:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      DBParameterGroupName: !Ref DBParameterGroup
+      Engine: aurora-postgresql
+      DBClusterIdentifier: !Ref AuroraCluster
+      AvailabilityZone: 
+        Fn::ImportValue: !Sub ${CoreStackName}-AZTwo
+      DBInstanceClass: db.t3.medium 
+      AutoMinorVersionUpgrade: true
+      CopyTagsToSnapshot: true
+      DBInstanceIdentifier: kadai-aurora-postgresql-two
+      EnablePerformanceInsights: true
+      PreferredMaintenanceWindow: mon03:30-mon04:30
+      DeletionProtection: false
+      MonitoringInterval: 60
+      MonitoringRoleArn: 
+        Fn::ImportValue: !Sub ${CoreStackName}-RDSMonitorRole
+      PubliclyAccessible: false
+      PromotionTier: 2
+      Tags:
+        - Key: Name
+          Value: kadai-aurora-posgre-instance-two
+
+# Outputs:
+#   ClusterEndpoint:
+#     Description: 'Aurora Cluster/Writer Endpoint'
+#     Value: !GetAtt 'AuroraDBCluster.Endpoint.Address'
+#   ReaderEndpoint:
+#     Description: 'Aurora Reader Endpoint'
+#     Value: !GetAtt 'AuroraDBCluster.ReadEndpoint.Address'
+#   Port:
+#     Description: 'Aurora Endpoint Port'
+#     Value: !GetAtt 'AuroraDBCluster.Endpoint.Port'
+#   DBUsername:
+#     Description: 'Database master username'
+#     Value: !Ref DBUsername
+#   DBName:
+#     Description: 'Database Name'
+#     Value: !Ref DBName
+#   PSQLCommandLine:    
+#     Description: PSQL Command Line
+#     Value: !Join
+#              - ''
+#              - - 'psql --host='
+#                - !GetAtt 'AuroraDBCluster.Endpoint.Address' 
+#                - ' --port='
+#                - !GetAtt 'AuroraDBCluster.Endpoint.Port'
+#                - ' --username='
+#                - !Ref DBUsername
+#                - ' --dbname='
+#                - !Ref DBName

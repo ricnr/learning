@@ -168,6 +168,9 @@ Resources:
           CidrIp: !FindInMap [ 'SubnetConfig', 'PrivateOne', 'CIDR']  
         - IpProtocol: -1
           CidrIp: !FindInMap [ 'SubnetConfig', 'PrivateTwo', 'CIDR']  
+      Tags: 
+        - Key: 'Name'
+          Value: 'kadai-interface-endpoint-sg'
   LogsEndpoint:
     Type: AWS::EC2::VPCEndpoint
     Properties:
@@ -261,14 +264,40 @@ Resources:
       IpProtocol: tcp
       FromPort: 80
       ToPort: 80
-      SourceSecurityGroupId: !GetAtt ALBSecurityGroup.GroupId 
       GroupId: !GetAtt FargateContainerSecurityGroup.GroupId
-
+      SourceSecurityGroupId: !GetAtt ALBSecurityGroup.GroupId
+  RDSSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: 'kadai1-rds-sg'
+      GroupDescription: 'rds security group'
+      VpcId: 
+        Ref: VPC
+      Tags: 
+        - Key: 'Name'
+          Value: 'kadai-rds-sg'
+  RDSSecurityGroupWebIngress: 
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties: 
+      IpProtocol: tcp
+      FromPort: 5432
+      ToPort: 5432
+      SourceSecurityGroupId: !GetAtt FargateContainerSecurityGroup.GroupId
+      GroupId: !GetAtt RDSSecurityGroup.GroupId
+  RDSSecurityGroupIngress:
+    Type: AWS::EC2::SecurityGroupIngress
+      Properties:
+        IpProtocol: -1
+        GroupId: !GetAtt RDSSecurityGroup.GroupId
+        SourceSecurityGroupId: !GetAtt RDSSecurityGroup.GroupId
+      Description: 'Self Reference' 
+    
 
   #--- ECS Service Role -----
   EcsServiceRole:
     Type: AWS::IAM::Role  
     Properties:
+      RoleName: kadai-EcsServiceRole
       AssumeRolePolicyDocument:
         Statement:
         - Effect: Allow
@@ -315,6 +344,7 @@ Resources:
   EcsTaskRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: kadai-EcsTaskRole
       AssumeRolePolicyDocument:
         Statement:
         - Effect: Allow
@@ -341,8 +371,33 @@ Resources:
             - 'logs:PutLogEvents'
             Resource: '*'
         
+  #--- DB Role ---
+  RDSMonitorRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: kadai-RDSMonitorRole
+      Path: /
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: 
+              - monitoring.rds.amazonaws.com
+            Action: 
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonRDSEnhancedMonitoringRole
 
 Outputs:
+  AZOne:
+    Value: !Ref AZOne
+    Export:
+      Name: !Sub ${AWS::StackName}-AZOne
+  AZTwo:
+    Value: !Ref AZTwo
+    Export:
+      Name: !Sub ${AWS::StackName}-AZTwo
   CurrentAccount:
     Value: !Ref AWS::AccountId
     Export:
@@ -351,6 +406,14 @@ Outputs:
     Value: !Ref VPC
     Export:
       Name: !Sub ${AWS::StackName}-VPC
+  PublicSubnetOne:
+    Value: !Ref PublicSubnetOne
+    Export:
+      Name: !Sub ${AWS::StackName}-PublicSubnetOne
+  PublicSubnetTwo:
+    Value: !Ref PublicSubnetTwo
+    Export:
+      Name: !Sub ${AWS::StackName}-PublicSubnetTwo
   PrivateSubnetOne:
     Value: !Ref PrivateSubnetOne
     Export:
@@ -360,11 +423,15 @@ Outputs:
     Export:
       Name: !Sub ${AWS::StackName}-PrivateSubnetTwo
   FargateSecurityGroup:
-    Value: !Ref FargateContainerSecurityGroup 
+    Value: !GetAtt FargateContainerSecurityGroup.GroupId
     Export:
       Name: !Sub ${AWS::StackName}-fargate-sg
+  RDSSecurigyGroup:
+    Value: !GetAtt RDSSecurityGroup.GroupId
+    Export:
+      Name: !Sub ${AWS::StackName}-rds-sg 
   ALBSecurityGroup:
-    Value: !Ref ALBSecurityGroup
+    Value: !GetAtt ALBSecurityGroup.GroupId
     Export:
       Name: !Sub ${AWS::StackName}-alb-sg
   EcsServiceRole:
@@ -375,5 +442,9 @@ Outputs:
     Value: !GetAtt EcsTaskRole.Arn
     Export:
       Name: !Sub ${AWS::StackName}-EcsTaskRole
+  RDSMonitorRole:
+    Value: !GetAtt RDSMonitorRole.Arn
+    Export:
+      Name: !Sub ${AWS::StackName}-RDSMonitorRole
 
       
