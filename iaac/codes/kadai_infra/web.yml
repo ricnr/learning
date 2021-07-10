@@ -5,6 +5,9 @@ Parameters:
   CoreStackName:
     Default: core
     Type: String
+  RdsStackName:
+    Default: rds
+    Type: String
   ClusterImage:
     Default: <accountid>.dkr.ecr.ap-northeast-1.amazonaws.com/<repository-name>:latest
     Type: String
@@ -89,6 +92,16 @@ Resources:
       ContainerDefinitions:
         - Name: kadai1-service
           Image: !Ref ClusterImage
+          Environment:
+            - Name: DB_HOST
+              Value: 
+                Fn::ImportValue: !Sub ${RdsStackName}-DBEndpoint
+            - Name: DB_PORT
+              Value:
+                Fn::ImportValue: !Sub ${RdsStackName}-DBPort
+            - Name: DATABASE
+              Value:
+                Fn::ImportValue: !Sub ${RdsStackName}-DBName
           PortMappings:
             - HostPort: 80
               Protocol: HTTP
