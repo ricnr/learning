@@ -286,10 +286,10 @@ Resources:
       GroupId: !GetAtt RDSSecurityGroup.GroupId
   RDSSecurityGroupIngress:
     Type: AWS::EC2::SecurityGroupIngress
-      Properties:
-        IpProtocol: -1
-        GroupId: !GetAtt RDSSecurityGroup.GroupId
-        SourceSecurityGroupId: !GetAtt RDSSecurityGroup.GroupId
+    Properties:
+      IpProtocol: -1
+      GroupId: !GetAtt RDSSecurityGroup.GroupId
+      SourceSecurityGroupId: !GetAtt RDSSecurityGroup.GroupId
       Description: 'Self Reference' 
     
 

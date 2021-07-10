@@ -130,31 +130,25 @@ Resources:
         - Key: Name
           Value: kadai-aurora-posgre-instance-two
 
-# Outputs:
-#   ClusterEndpoint:
-#     Description: 'Aurora Cluster/Writer Endpoint'
-#     Value: !GetAtt 'AuroraDBCluster.Endpoint.Address'
-#   ReaderEndpoint:
-#     Description: 'Aurora Reader Endpoint'
-#     Value: !GetAtt 'AuroraDBCluster.ReadEndpoint.Address'
-#   Port:
-#     Description: 'Aurora Endpoint Port'
-#     Value: !GetAtt 'AuroraDBCluster.Endpoint.Port'
-#   DBUsername:
-#     Description: 'Database master username'
-#     Value: !Ref DBUsername
-#   DBName:
-#     Description: 'Database Name'
-#     Value: !Ref DBName
-#   PSQLCommandLine:    
-#     Description: PSQL Command Line
-#     Value: !Join
-#              - ''
-#              - - 'psql --host='
-#                - !GetAtt 'AuroraDBCluster.Endpoint.Address' 
-#                - ' --port='
-#                - !GetAtt 'AuroraDBCluster.Endpoint.Port'
-#                - ' --username='
-#                - !Ref DBUsername
-#                - ' --dbname='
-#                - !Ref DBName
+Outputs:
+  ClusterEndpoint:
+    Description: 'Aurora Cluster/Writer Endpoint'
+    Value: !GetAtt AuroraCluster.Endpoint.Address
+    Export:
+      Name: !Sub ${AWS::StackName}-DBEndpoint
+  ReaderEndpoint:
+    Description: 'Aurora Reader Endpoint'
+    Value: !GetAtt AuroraCluster.ReadEndpoint.Address
+    Export:
+      Name: !Sub ${AWS::StackName}-DBReadEndpoint
+  Port:
+    Description: 'Aurora Endpoint Port'
+    Value: !GetAtt AuroraCluster.Endpoint.Port
+    Export:
+      Name: !Sub ${AWS::StackName}-DBPort
+  DBName:
+    Description: 'Database Name'
+    Value: !Ref DatabaseName
+    Export:
+      Name: !Sub ${AWS::StackName}-DBName
+
