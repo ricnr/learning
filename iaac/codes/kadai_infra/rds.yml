@@ -34,11 +34,9 @@ Resources:
           Value: kadai-db-cluster-param-group
   AuroraCluster:
     Type: AWS::RDS::DBCluster
-    DeletionPolicy: Snapshot
-    UpdateReplacePolicy: Snapshot
     Properties:
-      MasterUsername: '{{resolve:secretsmanager:rds:SecretString:rds/username}}'
-      MasterUserPassword: '{{resolve:secretsmanager:rds:SecretString:rds/password}}'
+      MasterUsername: '{{resolve:secretsmanager:rds:SecretString:username}}'
+      MasterUserPassword: '{{resolve:secretsmanager:rds:SecretString:password}}'
       Engine: aurora-postgresql
       EngineMode: provisioned
       EngineVersion: 10.14
@@ -49,9 +47,8 @@ Resources:
       BackupRetentionPeriod: 5
       DatabaseName: !Ref DatabaseName
       DBClusterIdentifier: kadai-aurora-posgresql
-      DeletionProtection: false
       PreferredBackupWindow: 03:00-03:30
-      PreferredMaintenanceWindow: wed03:30-wed04:30
+      PreferredMaintenanceWindow: wed:03:30-wed:04:30
       StorageEncrypted: true
       Tags:
         - Key: Name
@@ -75,7 +72,6 @@ Resources:
         log_rotation_size: 102400
         rds.log_retention_period: 10080
         random_page_cost: 1
-        strack_activity_query_size: 16384
         idle_in_transaction_session_timeout: 7200000
         statement_timeout: 7200000
       Tags:
@@ -95,8 +91,7 @@ Resources:
       CopyTagsToSnapshot: true
       DBInstanceIdentifier: kadai-aurora-postgresql-one
       EnablePerformanceInsights: true
-      PreferredMaintenanceWindow: mon03:30-mon04:30
-      DeletionProtection: false
+      PreferredMaintenanceWindow: Mon:03:30-Mon:04:30
       MonitoringInterval: 60
       MonitoringRoleArn: 
         Fn::ImportValue: !Sub ${CoreStackName}-RDSMonitorRole
@@ -119,8 +114,7 @@ Resources:
       CopyTagsToSnapshot: true
       DBInstanceIdentifier: kadai-aurora-postgresql-two
       EnablePerformanceInsights: true
-      PreferredMaintenanceWindow: mon03:30-mon04:30
-      DeletionProtection: false
+      PreferredMaintenanceWindow: Mon:03:30-Mon:04:30
       MonitoringInterval: 60
       MonitoringRoleArn: 
         Fn::ImportValue: !Sub ${CoreStackName}-RDSMonitorRole
