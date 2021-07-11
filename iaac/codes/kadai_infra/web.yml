@@ -143,4 +143,4 @@ Outputs:
   ApiURL:
     Value: 
       Fn::Join: [ "", [ "http://", { "Fn::GetAtt" : [ "InternetALB", "DNSName" ]}, "/api"]]
-      
+

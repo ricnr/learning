@@ -6,6 +6,7 @@ from botocore.exceptions import ClientError
 import psycopg2
 import os
 from os import path
+import ast
 
 app = Flask(__name__)
 CORS(app)
@@ -15,10 +16,9 @@ DB_HOST = os.environ["DB_HOST"]
 DB_PORT = os.environ["DB_PORT"]
 DATABASE = os.environ["DATABASE"]
 DB_USER = os.environ.get("DB_USER")
-DB_PASSWORD = os.environ.get("DB_PSSSWORD")
+DB_PASSWORD = os.environ.get("DB_PASSWORD")
 
 def get_secret():
-    global rds_password
     secret_id = "rds"
     region_name = "ap-northeast-1"
     # Create a Secrets Manager client
@@ -59,7 +59,7 @@ def get_secret():
             return base64.b64decode(get_secret_value_response['SecretBinary'])
 
 def set_connection():
-    rds_secret = get_secret()
+    rds_secret = ast.literal_eval(get_secret())
     try:
         global conn
         user = DB_USER if DB_USER else rds_secret.get('username')
@@ -82,14 +82,14 @@ def healthCheckResponse():
     return jsonify({"message" : "Nothing here, used for health check. Try /api instead."})
 
 @app.route("/api")
-def getResponse():
+def getResponseApi():
     # read the JSON from the listed file.
     response = Response(open("test-data.json", "rb").read())
     response.headers["Content-Type"]= "application/json"
     return response
 
 @app.route("/get")
-def getResponse():
+def getResponseDb():
     try:
         global conn
         with conn:
@@ -98,7 +98,7 @@ def getResponse():
                     SELECT *
                     FROM test
                     LIMIT 5;
-                """, (return_count,))
+                """)
 
                 test = []
                 row = curs.fetchone()
@@ -110,7 +110,7 @@ def getResponse():
         print('DB Error')
 
 @app.route("/create")
-def getResponse():
+def createData():
     try:
         global conn
         with conn:
@@ -118,8 +118,7 @@ def getResponse():
                 curs.execute("""
                     CREATE TABLE test (id INT, name VARCHAR(10));
                     INSERT INTO test VALUES (1, 'test1'), (2, 'test2'), (3, 'test3');
-                """, (return_count,))
-
+                """)
                 test = []
                 row = curs.fetchone()
                 while row is not None:
