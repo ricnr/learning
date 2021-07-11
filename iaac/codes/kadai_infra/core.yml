@@ -369,6 +369,11 @@ Resources:
             - 'logs:CreateLogStream'
             - 'logs:CreateLogGroup'
             - 'logs:PutLogEvents'
+            # session manager
+            - 'ssmmessages:CreateControlChannel'
+            - 'ssmmessages:CreateDataChannel'
+            - 'ssmmessages:OpenControlChannel'
+            - 'ssmmessages:OpenDataChannel'
             Resource: '*'
         
   #--- DB Role ---

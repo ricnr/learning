@@ -135,6 +135,7 @@ Resources:
             - Fn::ImportValue: !Sub ${CoreStackName}-PrivateSubnetOne
             - Fn::ImportValue: !Sub ${CoreStackName}-PrivateSubnetTwo
       TaskDefinition: !Ref ECSTaskDefinition
+      EnableExecuteCommand: true
 
 Outputs:
   CheckURL:
