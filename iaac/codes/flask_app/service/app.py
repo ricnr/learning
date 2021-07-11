@@ -108,12 +108,8 @@ def getResponseDb():
                     LIMIT 5;
                 """)
 
-                test = []
-                row = curs.fetchone()
-                while row is not None:
-                    test.append(row)
-                    row = curs.fetchone()
-                return test
+                row = dict(curs.fetchall())
+                return row
     except:
         print('DB Error')
 
@@ -127,12 +123,8 @@ def createData():
                     CREATE TABLE test (id INT, name VARCHAR(10));
                     INSERT INTO test VALUES (1, 'test1'), (2, 'test2'), (3, 'test3');
                 """)
-                test = []
-                row = curs.fetchone()
-                while row is not None:
-                    test.append(row)
-                    row = curs.fetchone()
-                return test
+                row = dict(curs.fetchall())
+                return row
     except:
         print('DB Error')
 
