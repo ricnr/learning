@@ -261,9 +261,7 @@ Resources:
   FargateContainerSecurityGroupIngress: 
     Type: AWS::EC2::SecurityGroupIngress
     Properties: 
-      IpProtocol: tcp
-      FromPort: 80
-      ToPort: 80
+      IpProtocol: -1
       GroupId: !GetAtt FargateContainerSecurityGroup.GroupId
       SourceSecurityGroupId: !GetAtt ALBSecurityGroup.GroupId
   RDSSecurityGroup:
@@ -280,8 +278,8 @@ Resources:
     Type: AWS::EC2::SecurityGroupIngress
     Properties: 
       IpProtocol: tcp
-      FromPort: 5432
-      ToPort: 5432
+      FromPort: 3306
+      ToPort: 3306
       SourceSecurityGroupId: !GetAtt FargateContainerSecurityGroup.GroupId
       GroupId: !GetAtt RDSSecurityGroup.GroupId
   RDSSecurityGroupIngress:
@@ -321,7 +319,7 @@ Resources:
             - 'ec2:DeleteNetworkInterface'
             - 'ec2:DeleteNetworkInterfacePermission'
             - 'ec2:Describe*'
-            - 'ec2:DetachNetwåorkInterface' 
+            - 'ec2:DetachNetworkInterface' 
             # allow ECS to update load balancers
             - 'elasticloadbalancing:DeregisterInstancesFromLoadBalancer'
             - 'elasticloadbalancing:DeregisterTargets'
