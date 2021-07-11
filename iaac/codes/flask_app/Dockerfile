@@ -9,5 +9,4 @@ WORKDIR /service
 
 RUN pip3 install -r ./requirements.txt
 
-ENTRYPOINT ["python3"]
-CMD ["app.py"]
+CMD ["python3", "app.py"]

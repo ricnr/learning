@@ -24,7 +24,8 @@ Resources:
       Port: 80
       TargetType: ip
       HealthCheckEnabled: true
-      HealthCheckIntervalSeconds: 10
+      HealthCheckTimeoutSeconds: 10
+      HealthCheckIntervalSeconds: 30
       HealthCheckPath: /
       HealthCheckProtocol: HTTP
       HealthyThresholdCount: 3
