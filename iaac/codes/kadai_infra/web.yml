@@ -135,6 +135,7 @@ Resources:
           Subnets:
             - Fn::ImportValue: !Sub ${CoreStackName}-PrivateSubnetOne
             - Fn::ImportValue: !Sub ${CoreStackName}-PrivateSubnetTwo
+      HealthCheckGracePeriodSeconds: 10
       TaskDefinition: !Ref ECSTaskDefinition
       EnableExecuteCommand: true
 

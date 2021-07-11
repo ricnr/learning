@@ -59,7 +59,11 @@ def get_secret():
             return base64.b64decode(get_secret_value_response['SecretBinary'])
 
 def set_connection():
-    rds_secret = ast.literal_eval(get_secret())
+    secrets = get_secret()
+    if secrets:
+        rds_secret = ast.literal_eval(secrets)
+    else:
+        print('Failed to get secrets value')
     try:
         global conn
         user = DB_USER if DB_USER else rds_secret.get('username')
