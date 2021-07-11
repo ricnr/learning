@@ -380,6 +380,9 @@ Resources:
             - 'logs:CreateLogStream'
             - 'logs:CreateLogGroup'
             - 'logs:PutLogEvents'
+            # secrets manager
+            - 'secretsmanager:GetSecretValue'
+            - 'kms:Decrypt'
             # session manager
             - 'ssmmessages:CreateControlChannel'
             - 'ssmmessages:CreateDataChannel'

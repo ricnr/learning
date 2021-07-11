@@ -27,6 +27,7 @@ def get_secret():
         service_name='secretsmanager',
         region_name=region_name
     )
+    secret = None
     try:
         get_secret_value_response = client.get_secret_value(
             SecretId=secret_id
@@ -54,15 +55,18 @@ def get_secret():
             raise e
     else:
         if 'SecretString' in get_secret_value_response:
-            return get_secret_value_response['SecretString']
+            secret = get_secret_value_response['SecretString']
         else:
-            return base64.b64decode(get_secret_value_response['SecretBinary'])
+            secret = base64.b64decode(get_secret_value_response['SecretBinary'])
+    return secret
+
 
 def set_connection():
     secrets = get_secret()
     if secrets:
         rds_secret = ast.literal_eval(secrets)
     else:
+        rds_secret = secrets
         print('Failed to get secrets value')
     try:
         global conn
