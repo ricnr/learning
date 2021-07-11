@@ -107,7 +107,7 @@ def getResponseDb():
                     FROM test
                     LIMIT 5;
                 """)
-                row = dict(curs.fetchall())
+                row = str(curs.fetchall())
         return row
     except:
         print('DB Error')
@@ -122,8 +122,8 @@ def createData():
                     CREATE TABLE test (id INT, name VARCHAR(10));
                     INSERT INTO test VALUES (1, 'test1'), (2, 'test2'), (3, 'test3');
                 """)
-                row = dict(curs.fetchall())
-        return row
+                row = str(curs.fetchall())
+        return "created test table"
     except:
         print('DB Error')
 
