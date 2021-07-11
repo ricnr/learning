@@ -111,6 +111,10 @@ Resources:
         sudo usermod -a -G docker ec2-user
         sudo systemctl enable docker
         sudo yum install -y jq
+        sudo yum install -y postgresql-server postgresql
+        sudo postgresql-setup initdb
+        sudo systemctl enable postgresql.service
+        sudo systemctl start postgresql.service
       Tags:
         - Key: 'Name'
           Value: 'mng-instance'

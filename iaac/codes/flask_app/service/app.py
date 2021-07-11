@@ -14,8 +14,8 @@ conn = None
 DB_HOST = os.environ["DB_HOST"]
 DB_PORT = os.environ["DB_PORT"]
 DATABASE = os.environ["DATABASE"]
-DB_USER = ""
-DB_PASSWORD = ""
+DB_USER = os.environ.get("DB_USER")
+DB_PASSWORD = os.environ.get("DB_PSSSWORD")
 
 def get_secret():
     global rds_password
@@ -62,12 +62,14 @@ def set_connection():
     rds_secret = get_secret()
     try:
         global conn
+        user = DB_USER if DB_USER else rds_secret.get('username')
+        password = DB_PASSWORD if DB_PASSWORD else rds_secret.get('password')
         conn = psycopg2.connect(
             host=DB_HOST,
             port=DB_PORT,
             database=DATABASE,
-            user=rds_secret.get('username'),
-            password=rds_secret.get('password')
+            user=user,
+            password=password
         )
     except (Exception, psycopg2.DatabaseError) as err:
         print(set_connection.__name__, err)
