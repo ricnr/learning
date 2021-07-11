@@ -107,9 +107,8 @@ def getResponseDb():
                     FROM test
                     LIMIT 5;
                 """)
-
                 row = dict(curs.fetchall())
-                return row
+        return row
     except:
         print('DB Error')
 
@@ -124,7 +123,7 @@ def createData():
                     INSERT INTO test VALUES (1, 'test1'), (2, 'test2'), (3, 'test3');
                 """)
                 row = dict(curs.fetchall())
-                return row
+        return row
     except:
         print('DB Error')
 
